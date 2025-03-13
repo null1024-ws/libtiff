@@ -26,7 +26,8 @@
  * TIFF Library.
  */
 #include "tiffiop.h"
-
+#include <float.h>
+static long long expr_moran[2]; static long long low_moran[2]; static long long high_moran[2];
 int TIFFFlush(TIFF *tif)
 {
     if (tif->tif_mode == O_RDONLY)
@@ -47,7 +48,7 @@ int TIFFFlush(TIFF *tif)
             return 1;
     }
 
-    if ((tif->tif_flags & (TIFF_DIRTYDIRECT | TIFF_DIRTYSTRIP)) &&
+    if ((tif->tif_flags & (TIFF_DIRTYDIRECT | TIFF_DIRTYSTRIP)) &&  // 12 tif_flush.c:50  // 18 tif_flush.c:50
         !TIFFRewriteDirectory(tif))
         return (0);
 
@@ -117,7 +118,7 @@ int TIFFForceStrileArrayWriting(TIFF *tif)
             return 0;
     }
 
-    if (_TIFFRewriteField(tif,
+    if (_TIFFRewriteField(tif,  // 7 tif_flush.c:120
                           isTiled ? TIFFTAG_TILEOFFSETS : TIFFTAG_STRIPOFFSETS,
                           TIFF_LONG8, tif->tif_dir.td_nstrips,
                           tif->tif_dir.td_stripoffset_p) &&

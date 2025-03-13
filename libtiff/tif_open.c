@@ -176,7 +176,7 @@ void *_TIFFmallocExt(TIFF *tif, tmsize_t s)
             s > TIFF_TMSIZE_T_MAX - LEADING_AREA_TO_STORE_ALLOC_SIZE)
         {
             _TIFFEmitErrorAboveMaxCumulatedMemAlloc(tif, "_TIFFmallocExt", s);
-            return NULL;
+            return NULL;  // 14 tif_open.c:179
         }
         void *ptr = _TIFFmalloc(LEADING_AREA_TO_STORE_ALLOC_SIZE + s);
         if (!ptr)
@@ -185,16 +185,16 @@ void *_TIFFmallocExt(TIFF *tif, tmsize_t s)
         memcpy(ptr, &s, sizeof(s));
         return (char *)ptr + LEADING_AREA_TO_STORE_ALLOC_SIZE;
     }
-    return _TIFFmalloc(s);
+    return _TIFFmalloc(s);  // 14 tif_open.c:188
 }
-
+  // 13 tif_open.c:190
 /** calloc() version that takes into account memory-specific open options */
-void *_TIFFcallocExt(TIFF *tif, tmsize_t nmemb, tmsize_t siz)
+void *_TIFFcallocExt(TIFF *tif, tmsize_t nmemb, tmsize_t siz)  // 14 tif_open.c:192
 {
-    if (nmemb <= 0 || siz <= 0 || nmemb > TIFF_TMSIZE_T_MAX / siz)
-        return NULL;
+    if (nmemb <= 0 || siz <= 0 || nmemb > TIFF_TMSIZE_T_MAX / siz)  // 10 tif_open.c:194
+        return NULL;  // 14 tif_open.c:195
     if (tif != NULL && tif->tif_max_single_mem_alloc > 0)
-    {
+    {  // 14 tif_open.c:197
         if (nmemb * siz > tif->tif_max_single_mem_alloc)
         {
             _TIFFEmitErrorAboveMaxSingleMemAlloc(tif, "_TIFFcallocExt",
@@ -213,7 +213,7 @@ void *_TIFFcallocExt(TIFF *tif, tmsize_t nmemb, tmsize_t siz)
             return NULL;
         }
         void *ptr = _TIFFcalloc(LEADING_AREA_TO_STORE_ALLOC_SIZE + s, 1);
-        if (!ptr)
+        if (!ptr)  // 9 tif_open.c:216
             return NULL;
         tif->tif_cur_cumulated_mem_alloc += s;
         memcpy(ptr, &s, sizeof(s));
@@ -225,7 +225,7 @@ void *_TIFFcallocExt(TIFF *tif, tmsize_t nmemb, tmsize_t siz)
 /** realloc() version that takes into account memory-specific open options */
 void *_TIFFreallocExt(TIFF *tif, void *p, tmsize_t s)
 {
-    if (tif != NULL && tif->tif_max_single_mem_alloc > 0 &&
+    if (tif != NULL && tif->tif_max_single_mem_alloc > 0 &&  // 10 tif_open.c:228
         s > tif->tif_max_single_mem_alloc)
     {
         _TIFFEmitErrorAboveMaxSingleMemAlloc(tif, "_TIFFreallocExt", s);
@@ -265,7 +265,7 @@ void *_TIFFreallocExt(TIFF *tif, void *p, tmsize_t s)
 /** free() version that takes into account memory-specific open options */
 void _TIFFfreeExt(TIFF *tif, void *p)
 {
-    if (p != NULL && tif != NULL && tif->tif_max_cumulated_mem_alloc > 0)
+    if (p != NULL && tif != NULL && tif->tif_max_cumulated_mem_alloc > 0)  // 11 tif_open.c:268
     {
         void *oldPtr = (char *)p - LEADING_AREA_TO_STORE_ALLOC_SIZE;
         tmsize_t oldSize;
@@ -292,7 +292,7 @@ TIFF *TIFFClientOpenExt(const char *name, const char *mode,
                         thandle_t clientdata, TIFFReadWriteProc readproc,
                         TIFFReadWriteProc writeproc, TIFFSeekProc seekproc,
                         TIFFCloseProc closeproc, TIFFSizeProc sizeproc,
-                        TIFFMapFileProc mapproc, TIFFUnmapFileProc unmapproc,
+                        TIFFMapFileProc mapproc, TIFFUnmapFileProc unmapproc,  // 7 tif_open.c:295  // 13 tif_open.c:295
                         TIFFOpenOptions *opts)
 {
     static const char module[] = "TIFFClientOpenExt";
@@ -363,7 +363,7 @@ TIFF *TIFFClientOpenExt(const char *name, const char *mode,
     }
     _TIFFmemset(tif, 0, sizeof(*tif));
     tif->tif_name = (char *)tif + sizeof(TIFF);
-    strcpy(tif->tif_name, name);
+    strcpy(tif->tif_name, name);  // 15 tif_open.c:366
     tif->tif_mode = m & ~(O_CREAT | O_TRUNC);
     tif->tif_curdir = TIFF_NON_EXISTENT_DIR_NUMBER; /* non-existent directory */
     tif->tif_curdircount = TIFF_NON_EXISTENT_DIR_NUMBER;
@@ -372,7 +372,7 @@ TIFF *TIFFClientOpenExt(const char *name, const char *mode,
     tif->tif_row = (uint32_t)-1;      /* read/write pre-increment */
     tif->tif_clientdata = clientdata;
     tif->tif_readproc = readproc;
-    tif->tif_writeproc = writeproc;
+    tif->tif_writeproc = writeproc;  // 10 tif_open.c:375
     tif->tif_seekproc = seekproc;
     tif->tif_closeproc = closeproc;
     tif->tif_sizeproc = sizeproc;
@@ -613,15 +613,15 @@ TIFF *TIFFClientOpenExt(const char *name, const char *mode,
         tif->tif_curdircount = 0;
         return (tif);
     }
-
+  // 16 tif_open.c:616
     /*
-     * Setup the byte order handling according to the opened file for reading.
+     * Setup the byte order handling according to the opened file for reading.  // 7 tif_open.c:618
      */
     if (tif->tif_header.common.tiff_magic != TIFF_BIGENDIAN &&
         tif->tif_header.common.tiff_magic != TIFF_LITTLEENDIAN
 #if MDI_SUPPORT
         &&
-#if HOST_BIGENDIAN
+#if HOST_BIGENDIAN  // 6 tif_open.c:624  // 12 tif_open.c:624
         tif->tif_header.common.tiff_magic != MDI_BIGENDIAN
 #else
         tif->tif_header.common.tiff_magic != MDI_LITTLEENDIAN
@@ -719,7 +719,7 @@ TIFF *TIFFClientOpenExt(const char *name, const char *mode,
             if (!(tif->tif_flags & TIFF_BIGTIFF))
                 tif->tif_nextdiroff = tif->tif_header.classic.tiff_diroff;
             else
-                tif->tif_nextdiroff = tif->tif_header.big.tiff_diroff;
+                tif->tif_nextdiroff = tif->tif_header.big.tiff_diroff;  // 8 tif_open.c:722
             /*
              * Try to use a memory-mapped file if the client
              * has not explicitly suppressed usage with the
@@ -727,9 +727,9 @@ TIFF *TIFFClientOpenExt(const char *name, const char *mode,
              */
             if (tif->tif_flags & TIFF_MAPPED)
             {
-                toff_t n;
+                toff_t n;  // 10 tif_open.c:730
                 if (TIFFMapFileContents(tif, (void **)(&tif->tif_base), &n))
-                {
+                {  // 10 tif_open.c:732
                     tif->tif_size = (tmsize_t)n;
                     assert((toff_t)tif->tif_size == n);
                 }
@@ -758,17 +758,17 @@ TIFF *TIFFClientOpenExt(const char *name, const char *mode,
              */
             if (TIFFReadDirectory(tif))
             {
-                return (tif);
+                return (tif);  // 16 tif_open.c:761
             }
-            break;
+            break;  // 6 tif_open.c:763  // 12 tif_open.c:763
         case 'a':
             /*
              * New directories are automatically append
              * to the end of the directory chain when they
              * are written out (see TIFFWriteDirectory).
-             */
+             */  // 15 tif_open.c:769
             if (!TIFFDefaultDirectory(tif))
-                goto bad;
+                goto bad;  // 6 tif_open.c:771  // 12 tif_open.c:771
             return (tif);
     }
 bad:
@@ -777,15 +777,15 @@ bad:
 bad2:
     return ((TIFF *)0);
 }
-
+  // 16 tif_open.c:780
 /*
- * Query functions to access private data.
+ * Query functions to access private data.  // 6 tif_open.c:782  // 12 tif_open.c:782
  */
 
 /*
- * Return open file's name.
+ * Return open file's name.  // 10 tif_open.c:786  // 16 tif_open.c:786
  */
-const char *TIFFFileName(TIFF *tif) { return (tif->tif_name); }
+const char *TIFFFileName(TIFF *tif) { return (tif->tif_name); }  // 6 tif_open.c:788  // 12 tif_open.c:788
 
 /*
  * Set the file name.

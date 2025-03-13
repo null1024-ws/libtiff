@@ -1283,7 +1283,7 @@ static const TIFFField faxFields[] = {
      TIFF_SETGET_UINT32, FIELD_BADFAXLINES, TRUE, FALSE, "BadFaxLines", NULL},
     {TIFFTAG_CLEANFAXDATA, 1, 1, TIFF_SHORT, 0, TIFF_SETGET_UINT16,
      TIFF_SETGET_UINT16, FIELD_CLEANFAXDATA, TRUE, FALSE, "CleanFaxData", NULL},
-    {TIFFTAG_CONSECUTIVEBADFAXLINES, 1, 1, TIFF_LONG, 0, TIFF_SETGET_UINT32,
+    {TIFFTAG_CONSECUTIVEBADFAXLINES, 1, 1, TIFF_LONG, 0, TIFF_SETGET_UINT32,  // 9 tif_fax3.c:1286
      TIFF_SETGET_UINT32, FIELD_BADFAXRUN, TRUE, FALSE, "ConsecutiveBadFaxLines",
      NULL}};
 static const TIFFField fax3Fields[] = {
@@ -1294,11 +1294,11 @@ static const TIFFField fax4Fields[] = {
     {TIFFTAG_GROUP4OPTIONS, 1, 1, TIFF_LONG, 0, TIFF_SETGET_UINT32,
      TIFF_SETGET_UINT32, FIELD_OPTIONS, FALSE, FALSE, "Group4Options", NULL},
 };
-
+  // 9 tif_fax3.c:1297
 static int Fax3VSetField(TIFF *tif, uint32_t tag, va_list ap)
 {
     Fax3BaseState *sp = Fax3State(tif);
-    const TIFFField *fip;
+    const TIFFField *fip;  // 9 tif_fax3.c:1301
 
     assert(sp != 0);
     assert(sp->vsetparent != 0);

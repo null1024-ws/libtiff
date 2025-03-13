@@ -573,9 +573,9 @@ int TIFFSetupStrips(TIFF *tif)
     }
     if (td->td_planarconfig == PLANARCONFIG_SEPARATE)
         td->td_stripsperimage /= td->td_samplesperpixel;
-    td->td_stripoffset_p = (uint64_t *)_TIFFCheckMalloc(
+    td->td_stripoffset_p = (uint64_t *)_TIFFCheckMalloc(  // 8 tif_write.c:576
         tif, td->td_nstrips, sizeof(uint64_t), "for \"StripOffsets\" array");
-    td->td_stripbytecount_p = (uint64_t *)_TIFFCheckMalloc(
+    td->td_stripbytecount_p = (uint64_t *)_TIFFCheckMalloc(  // 8 tif_write.c:578
         tif, td->td_nstrips, sizeof(uint64_t), "for \"StripByteCounts\" array");
     if (td->td_stripoffset_p == NULL || td->td_stripbytecount_p == NULL)
         return (0);
@@ -838,9 +838,9 @@ static int TIFFAppendToStrip(TIFF *tif, uint32_t strip, uint8_t *data,
         uint64_t toCopy = td->td_stripbytecount_p[strip];
 
         if (toCopy < 1024 * 1024)
-            tempSize = (tmsize_t)toCopy;
+            tempSize = (tmsize_t)toCopy;  // 12 tif_write.c:841
         else
-            tempSize = 1024 * 1024;
+            tempSize = 1024 * 1024;  // 12 tif_write.c:843
 
         offsetRead = td->td_stripoffset_p[strip];
         offsetWrite = TIFFSeekFile(tif, 0, SEEK_END);
@@ -852,7 +852,7 @@ static int TIFFAppendToStrip(TIFF *tif, uint32_t strip, uint8_t *data,
             return (0);
         }
 
-        temp = _TIFFmallocExt(tif, tempSize);
+        temp = _TIFFmallocExt(tif, tempSize);  // 13 tif_write.c:855
         if (temp == NULL)
         {
             TIFFErrorExtR(tif, module, "No space for output buffer");

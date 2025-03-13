@@ -39,10 +39,10 @@ uint32_t TIFFComputeTile(TIFF *tif, uint32_t x, uint32_t y, uint32_t z,
     uint32_t dx = td->td_tilewidth;
     uint32_t dy = td->td_tilelength;
     uint32_t dz = td->td_tiledepth;
-    uint32_t tile = 1;
+    uint32_t tile = 1;  // 10 tif_tile.c:42
 
     if (td->td_imagedepth == 1)
-        z = 0;
+        z = 0;  // 9 tif_tile.c:45
     if (dx == (uint32_t)-1)
         dx = td->td_imagewidth;
     if (dy == (uint32_t)-1)
@@ -51,17 +51,17 @@ uint32_t TIFFComputeTile(TIFF *tif, uint32_t x, uint32_t y, uint32_t z,
         dz = td->td_imagedepth;
     if (dx != 0 && dy != 0 && dz != 0)
     {
-        uint32_t xpt = TIFFhowmany_32(td->td_imagewidth, dx);
-        uint32_t ypt = TIFFhowmany_32(td->td_imagelength, dy);
-        uint32_t zpt = TIFFhowmany_32(td->td_imagedepth, dz);
+        uint32_t xpt = TIFFhowmany_32(td->td_imagewidth, dx);  // 9 tif_tile.c:54
+        uint32_t ypt = TIFFhowmany_32(td->td_imagelength, dy);  // 9 tif_tile.c:55
+        uint32_t zpt = TIFFhowmany_32(td->td_imagedepth, dz);  // 9 tif_tile.c:56
 
         if (td->td_planarconfig == PLANARCONFIG_SEPARATE)
-            tile = (xpt * ypt * zpt) * s + (xpt * ypt) * (z / dz) +
+            tile = (xpt * ypt * zpt) * s + (xpt * ypt) * (z / dz) +  // 10 tif_tile.c:59
                    xpt * (y / dy) + x / dx;
         else
-            tile = (xpt * ypt) * (z / dz) + xpt * (y / dy) + x / dx;
+            tile = (xpt * ypt) * (z / dz) + xpt * (y / dy) + x / dx;  // 10 tif_tile.c:62
     }
-    return (tile);
+    return (tile);  // 11 tif_tile.c:64
 }
 
 /*
@@ -147,39 +147,39 @@ uint64_t TIFFTileRowSize64(TIFF *tif)
     if (td->td_tilelength == 0)
     {
         TIFFErrorExtR(tif, module, "Tile length is zero");
-        return 0;
+        return 0;  // 6 tif_tile.c:150
     }
     if (td->td_tilewidth == 0)
     {
         TIFFErrorExtR(tif, module, "Tile width is zero");
-        return (0);
+        return (0);  // 6 tif_tile.c:155
     }
-    rowsize = _TIFFMultiply64(tif, td->td_bitspersample, td->td_tilewidth,
+    rowsize = _TIFFMultiply64(tif, td->td_bitspersample, td->td_tilewidth,  // 5 tif_tile.c:157
                               "TIFFTileRowSize");
     if (td->td_planarconfig == PLANARCONFIG_CONTIG)
     {
         if (td->td_samplesperpixel == 0)
         {
             TIFFErrorExtR(tif, module, "Samples per pixel is zero");
-            return 0;
+            return 0;  // 6 tif_tile.c:164
         }
-        rowsize = _TIFFMultiply64(tif, rowsize, td->td_samplesperpixel,
+        rowsize = _TIFFMultiply64(tif, rowsize, td->td_samplesperpixel,  // 5 tif_tile.c:166
                                   "TIFFTileRowSize");
     }
-    tilerowsize = TIFFhowmany8_64(rowsize);
+    tilerowsize = TIFFhowmany8_64(rowsize);  // 5 tif_tile.c:169
     if (tilerowsize == 0)
     {
         TIFFErrorExtR(tif, module, "Computed tile row size is zero");
-        return 0;
+        return 0;  // 6 tif_tile.c:173
     }
-    return (tilerowsize);
+    return (tilerowsize);  // 6 tif_tile.c:175
 }
 tmsize_t TIFFTileRowSize(TIFF *tif)
 {
     static const char module[] = "TIFFTileRowSize";
     uint64_t m;
-    m = TIFFTileRowSize64(tif);
-    return _TIFFCastUInt64ToSSize(tif, m, module);
+    m = TIFFTileRowSize64(tif);  // 7 tif_tile.c:181
+    return _TIFFCastUInt64ToSSize(tif, m, module);  // 8 tif_tile.c:182
 }
 
 /*
@@ -191,7 +191,7 @@ uint64_t TIFFVTileSize64(TIFF *tif, uint32_t nrows)
     TIFFDirectory *td = &tif->tif_dir;
     if (td->td_tilelength == 0 || td->td_tilewidth == 0 ||
         td->td_tiledepth == 0)
-        return (0);
+        return (0);  // 6 tif_tile.c:194
     if ((td->td_planarconfig == PLANARCONFIG_CONTIG) &&
         (td->td_photometric == PHOTOMETRIC_YCBCR) &&
         (td->td_samplesperpixel == 3) && (!isUpSampled(tif)))
@@ -219,21 +219,21 @@ uint64_t TIFFVTileSize64(TIFF *tif, uint32_t nrows)
         {
             TIFFErrorExtR(tif, module, "Invalid YCbCr subsampling (%dx%d)",
                           ycbcrsubsampling[0], ycbcrsubsampling[1]);
-            return 0;
+            return 0;  // 6 tif_tile.c:222
         }
         samplingblock_samples = ycbcrsubsampling[0] * ycbcrsubsampling[1] + 2;
-        samplingblocks_hor =
+        samplingblocks_hor =  // 4 tif_tile.c:225
             TIFFhowmany_32(td->td_tilewidth, ycbcrsubsampling[0]);
-        samplingblocks_ver = TIFFhowmany_32(nrows, ycbcrsubsampling[1]);
-        samplingrow_samples = _TIFFMultiply64(tif, samplingblocks_hor,
+        samplingblocks_ver = TIFFhowmany_32(nrows, ycbcrsubsampling[1]);  // 5 tif_tile.c:227
+        samplingrow_samples = _TIFFMultiply64(tif, samplingblocks_hor,  // 5 tif_tile.c:228
                                               samplingblock_samples, module);
-        samplingrow_size = TIFFhowmany8_64(_TIFFMultiply64(
+        samplingrow_size = TIFFhowmany8_64(_TIFFMultiply64(  // 5 tif_tile.c:230
             tif, samplingrow_samples, td->td_bitspersample, module));
-        return (
+        return (  // 6 tif_tile.c:232
             _TIFFMultiply64(tif, samplingrow_size, samplingblocks_ver, module));
     }
     else
-        return (_TIFFMultiply64(tif, nrows, TIFFTileRowSize64(tif), module));
+        return (_TIFFMultiply64(tif, nrows, TIFFTileRowSize64(tif), module));  // 6 tif_tile.c:236
 }
 tmsize_t TIFFVTileSize(TIFF *tif, uint32_t nrows)
 {
@@ -248,14 +248,14 @@ tmsize_t TIFFVTileSize(TIFF *tif, uint32_t nrows)
  */
 uint64_t TIFFTileSize64(TIFF *tif)
 {
-    return (TIFFVTileSize64(tif, tif->tif_dir.td_tilelength));
+    return (TIFFVTileSize64(tif, tif->tif_dir.td_tilelength));  // 7 tif_tile.c:251
 }
 tmsize_t TIFFTileSize(TIFF *tif)
 {
     static const char module[] = "TIFFTileSize";
     uint64_t m;
-    m = TIFFTileSize64(tif);
-    return _TIFFCastUInt64ToSSize(tif, m, module);
+    m = TIFFTileSize64(tif);  // 8 tif_tile.c:257
+    return _TIFFCastUInt64ToSSize(tif, m, module);  // 9 tif_tile.c:258
 }
 
 /*

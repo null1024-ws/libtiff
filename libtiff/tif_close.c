@@ -26,7 +26,11 @@
  * TIFF Library.
  */
 #include "tiffiop.h"
+//#include <float.h>
+static long long expr_moran[2]; static long long low_moran[2]; static long long high_moran[2];
 #include <string.h>
+#include <float.h>
+//long long expr_moran[2]; long long low_moran[2]; long long high_moran[2];
 
 /************************************************************************/
 /*                            TIFFCleanup()                             */
@@ -47,7 +51,7 @@ void TIFFCleanup(TIFF *tif)
      * Flush buffered data and directory (if dirty).
      */
     if (tif->tif_mode != O_RDONLY)
-        TIFFFlush(tif);
+        TIFFFlush(tif);  // 11 tif_close.c:50  // 17 tif_close.c:50
     (*tif->tif_cleanup)(tif);
     TIFFFreeDirectory(tif);
 
@@ -98,7 +102,10 @@ void TIFFCleanup(TIFF *tif)
         _TIFFfreeExt(tif, tif->tif_fields);
     }
 
-    if (tif->tif_nfieldscompat > 0)
+    expr_moran[0] = tif->tif_nfieldscompat, low_moran[0] = 0, high_moran[0] = DBL_MAX;
+    expr_moran[1] = -1, low_moran[1] = -1, high_moran[1] = -1;
+    mdafl_gc_log(low_moran, high_moran, expr_moran, 1);
+    if (expr_moran[0] > low_moran[0])
     {
         uint32_t i;
 
@@ -160,7 +167,7 @@ void TIFFClose(TIFF *tif)
         TIFFCloseProc closeproc = tif->tif_closeproc;
         thandle_t fd = tif->tif_clientdata;
 
-        TIFFCleanup(tif);
+        TIFFCleanup(tif);  // 10 tif_close.c:163  // 16 tif_close.c:163
         (void)(*closeproc)(fd);
     }
 }

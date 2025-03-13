@@ -1773,7 +1773,7 @@ static int LogLuvVGetField(TIFF *tif, uint32_t tag, va_list ap)
     }
 }
 
-static const TIFFField LogLuvFields[] = {
+static const TIFFField LogLuvFields[] = {  // 9 tif_luv.c:1776
     {TIFFTAG_SGILOGDATAFMT, 0, 0, TIFF_SHORT, 0, TIFF_SETGET_INT,
      TIFF_SETGET_UNDEFINED, FIELD_PSEUDO, TRUE, FALSE, "SGILogDataFmt", NULL},
     {TIFFTAG_SGILOGENCODE, 0, 0, TIFF_SHORT, 0, TIFF_SETGET_INT,

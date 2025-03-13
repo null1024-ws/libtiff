@@ -29,8 +29,12 @@
  * (and also some miscellaneous stuff)
  */
 #include "tiffiop.h"
-#include <float.h> /*--: for Rational2Double */
+#include <float.h>
+static long long expr_moran[2]; static long long low_moran[2]; static long long high_moran[2];
+//#include <float.h> /*--: for Rational2Double */
 #include <limits.h>
+#include <float.h>
+//long long expr_moran[2]; long long low_moran[2]; long long high_moran[2];
 
 /*
  * These are used in the backwards compatibility code...
@@ -50,9 +54,9 @@ static void setByteArray(TIFF *tif, void **vpp, const void *vp, size_t nmemb,
     }
     if (vp)
     {
-        tmsize_t bytes = _TIFFMultiplySSize(NULL, nmemb, elem_size, NULL);
+        tmsize_t bytes = _TIFFMultiplySSize(NULL, nmemb, elem_size, NULL);  // 12 tif_dir.c:53
         if (bytes)
-            *vpp = (void *)_TIFFmallocExt(tif, bytes);
+            *vpp = (void *)_TIFFmallocExt(tif, bytes);  // 13 tif_dir.c:55
         if (*vpp)
             _TIFFmemcpy(*vpp, vp, bytes);
     }
@@ -78,7 +82,7 @@ void _TIFFsetShortArray(uint16_t **wpp, const uint16_t *wp, uint32_t n)
 void _TIFFsetShortArrayExt(TIFF *tif, uint16_t **wpp, const uint16_t *wp,
                            uint32_t n)
 {
-    setByteArray(tif, (void **)wpp, wp, n, sizeof(uint16_t));
+    setByteArray(tif, (void **)wpp, wp, n, sizeof(uint16_t));  // 11 tif_dir.c:81
 }
 
 void _TIFFsetLongArray(uint32_t **lpp, const uint32_t *lp, uint32_t n)
@@ -143,14 +147,20 @@ static int setExtraSamples(TIFF *tif, va_list ap, uint32_t *v)
     static const char module[] = "setExtraSamples";
 
     *v = (uint16_t)va_arg(ap, uint16_vap);
-    if ((uint16_t)*v > td->td_samplesperpixel)
+    expr_moran[0] = (uint16_t)*v, low_moran[0] = td->td_samplesperpixel, high_moran[0] = DBL_MAX;
+    expr_moran[1] = -1, low_moran[1] = -1, high_moran[1] = -1;
+    mdafl_gc_log(low_moran, high_moran, expr_moran, 1);
+    if (expr_moran[0] > low_moran[0])
         return 0;
     va = va_arg(ap, uint16_t *);
     if (*v > 0 && va == NULL) /* typically missing param */
         return 0;
     for (i = 0; i < *v; i++)
     {
-        if (va[i] > EXTRASAMPLE_UNASSALPHA)
+        expr_moran[0] = va[i], low_moran[0] = EXTRASAMPLE_UNASSALPHA, high_moran[0] = DBL_MAX;
+        expr_moran[1] = -1, low_moran[1] = -1, high_moran[1] = -1;
+        mdafl_gc_log(low_moran, high_moran, expr_moran, 1);
+        if (expr_moran[0] > low_moran[0])
         {
             /*
              * XXX: Corel Draw is known to produce incorrect
@@ -193,7 +203,10 @@ static uint16_t countInkNamesString(TIFF *tif, uint32_t slen, const char *s)
 {
     uint16_t i = 0;
 
-    if (slen > 0)
+    expr_moran[0] = slen, low_moran[0] = 0, high_moran[0] = DBL_MAX;
+    expr_moran[1] = -1, low_moran[1] = -1, high_moran[1] = -1;
+    mdafl_gc_log(low_moran, high_moran, expr_moran, 1);
+    if (expr_moran[0] > low_moran[0])
     {
         const char *ep = s + slen;
         const char *cp = s;
@@ -202,7 +215,10 @@ static uint16_t countInkNamesString(TIFF *tif, uint32_t slen, const char *s)
             for (; cp < ep && *cp != '\0'; cp++)
             {
             }
-            if (cp >= ep)
+            expr_moran[0] = cp, low_moran[0] = ep, high_moran[0] = DBL_MAX;
+            expr_moran[1] = -1, low_moran[1] = -1, high_moran[1] = -1;
+            mdafl_gc_log(low_moran, high_moran, expr_moran, 1);
+            if (expr_moran[0] >= low_moran[0])
                 goto bad;
             cp++; /* skip \0 */
             i++;
@@ -313,7 +329,11 @@ static int _TIFFVSetField(TIFF *tif, uint32_t tag, va_list ap)
             break;
         case TIFFTAG_ORIENTATION:
             v = (uint16_t)va_arg(ap, uint16_vap);
-            if (v < ORIENTATION_TOPLEFT || ORIENTATION_LEFTBOT < v)
+            expr_moran[0] = v, expr_moran[1] = ORIENTATION_LEFTBOT;
+            low_moran[0] = DBL_MIN, low_moran[1] = DBL_MIN;
+            high_moran[0] = ORIENTATION_TOPLEFT, high_moran[1] = v;
+            mdafl_gc_log(low_moran, high_moran, expr_moran, 0);
+            if ((expr_moran[0] < high_moran[0]) || (expr_moran[1] < high_moran[1]))
                 goto badvalue;
             else
                 td->td_orientation = (uint16_t)v;
@@ -426,7 +446,11 @@ static int _TIFFVSetField(TIFF *tif, uint32_t tag, va_list ap)
             break;
         case TIFFTAG_RESOLUTIONUNIT:
             v = (uint16_t)va_arg(ap, uint16_vap);
-            if (v < RESUNIT_NONE || RESUNIT_CENTIMETER < v)
+            expr_moran[0] = v, expr_moran[1] = RESUNIT_CENTIMETER;
+            low_moran[0] = DBL_MIN, low_moran[1] = DBL_MIN;
+            high_moran[0] = RESUNIT_NONE, high_moran[1] = v;
+            mdafl_gc_log(low_moran, high_moran, expr_moran, 0);
+            if ((expr_moran[0] < high_moran[0]) || (expr_moran[1] < high_moran[1]))
                 goto badvalue;
             td->td_resolutionunit = (uint16_t)v;
             break;
@@ -514,7 +538,11 @@ static int _TIFFVSetField(TIFF *tif, uint32_t tag, va_list ap)
             break;
         case TIFFTAG_SAMPLEFORMAT:
             v = (uint16_t)va_arg(ap, uint16_vap);
-            if (v < SAMPLEFORMAT_UINT || SAMPLEFORMAT_COMPLEXIEEEFP < v)
+            expr_moran[0] = v, expr_moran[1] = SAMPLEFORMAT_COMPLEXIEEEFP;
+            low_moran[0] = DBL_MIN, low_moran[1] = DBL_MIN;
+            high_moran[0] = SAMPLEFORMAT_UINT, high_moran[1] = v;
+            mdafl_gc_log(low_moran, high_moran, expr_moran, 0);
+            if ((expr_moran[0] < high_moran[0]) || (expr_moran[1] < high_moran[1]))
                 goto badvalue;
             td->td_sampleformat = (uint16_t)v;
 
@@ -576,7 +604,10 @@ static int _TIFFVSetField(TIFF *tif, uint32_t tag, va_list ap)
             uint16_t ninksinstring;
             ninksinstring = countInkNamesString(tif, v, s);
             status = ninksinstring > 0;
-            if (ninksinstring > 0)
+            expr_moran[0] = ninksinstring, low_moran[0] = 0, high_moran[0] = DBL_MAX;
+            expr_moran[1] = -1, low_moran[1] = -1, high_moran[1] = -1;
+            mdafl_gc_log(low_moran, high_moran, expr_moran, 1);
+            if (expr_moran[0] > low_moran[0])
             {
                 _TIFFsetNString(tif, &td->td_inknames, s, v);
                 td->td_inknameslen = v;
@@ -758,7 +789,6 @@ static int _TIFFVSetField(TIFF *tif, uint32_t tag, va_list ap)
                               tif->tif_name, fip->field_type, fip->field_name);
                 goto end;
             }
-
             if (fip->field_type == TIFF_ASCII)
             {
                 uint32_t ma;
@@ -773,7 +803,10 @@ static int _TIFFVSetField(TIFF *tif, uint32_t tag, va_list ap)
                 {
                     mb = (const char *)va_arg(ap, const char *);
                     size_t len = strlen(mb) + 1;
-                    if (len >= 0x80000000U)
+                    expr_moran[0] = len, low_moran[0] = 0x80000000U, high_moran[0] = DBL_MAX;
+                    expr_moran[1] = -1, low_moran[1] = -1, high_moran[1] = -1;
+                    mdafl_gc_log(low_moran, high_moran, expr_moran, 1);
+                    if (expr_moran[0] >= low_moran[0])
                     {
                         status = 0;
                         TIFFErrorExtR(tif, module,
@@ -804,6 +837,9 @@ static int _TIFFVSetField(TIFF *tif, uint32_t tag, va_list ap)
                 else
                     tv->count = fip->field_writecount;
 
+//IsNegated(0);
+//ShareTime(1);
+//IndexIs(1105);
                 if (tv->count == 0)
                 {
                     status = 0;
@@ -818,6 +854,9 @@ static int _TIFFVSetField(TIFF *tif, uint32_t tag, va_list ap)
 
                 tv->value = _TIFFCheckMalloc(tif, tv->count, tv_size,
                                              "custom tag binary object");
+//IsNegated(0);
+//ShareTime(1);
+//IndexIs(1106);
                 if (!tv->value)
                 {
                     status = 0;
@@ -855,7 +894,11 @@ static int _TIFFVSetField(TIFF *tif, uint32_t tag, va_list ap)
                             uint64_t *pui64 = (uint64_t *)tv->value;
                             for (int i = 0; i < tv->count; i++)
                             {
-                                if (pui64[i] > 0xffffffffu)
+                                expr_moran[0] = pui64[i], low_moran[0] = 0xffffffffu, high_moran[0] = DBL_MAX;
+                                expr_moran[1] = -1, low_moran[1] = -1, high_moran[1] = -1;
+                                mdafl_gc_log(low_moran, high_moran,
+                                             expr_moran, 1);
+                                if (expr_moran[0] > low_moran[0])
                                 {
                                     TIFFErrorExtR(
                                         tif, module,
@@ -874,8 +917,12 @@ static int _TIFFVSetField(TIFF *tif, uint32_t tag, va_list ap)
                             int64_t *pi64 = (int64_t *)tv->value;
                             for (int i = 0; i < tv->count; i++)
                             {
-                                if (pi64[i] > 2147483647 ||
-                                    pi64[i] < (-2147483647 - 1))
+                                expr_moran[0] = pi64[i], expr_moran[1] = pi64[i];
+                                low_moran[0] = 2147483647, low_moran[1] = DBL_MIN;
+                                high_moran[0] = DBL_MAX, high_moran[1] = (-2147483647 - 1);
+                                mdafl_gc_log(low_moran, high_moran,
+                                             expr_moran, 0);
+                                if ((expr_moran[0] > low_moran[0]) || (expr_moran[0] < high_moran[1]))
                                 {
                                     TIFFErrorExtR(
                                         tif, module,
@@ -1180,7 +1227,10 @@ int TIFFUnsetField(TIFF *tif, uint32_t tag)
                 break;
         }
 
-        if (i < td->td_customValueCount)
+        expr_moran[0] = i, low_moran[0] = DBL_MIN, high_moran[0] = td->td_customValueCount;
+        expr_moran[1] = -1, low_moran[1] = -1, high_moran[1] = -1;
+        mdafl_gc_log(low_moran, high_moran, expr_moran, 1);
+        if (expr_moran[0] < high_moran[0])
         {
             _TIFFfreeExt(tif, tv->value);
             for (; i < td->td_customValueCount - 1; i++)
@@ -1279,8 +1329,12 @@ static int _TIFFVGetField(TIFF *tif, uint32_t tag, va_list ap)
                 uint16_t i;
                 double v = td->td_sminsamplevalue[0];
                 for (i = 1; i < td->td_samplesperpixel; ++i)
-                    if (td->td_sminsamplevalue[i] < v)
+                {expr_moran[0] = td->td_sminsamplevalue[i], low_moran[0] = DBL_MIN, high_moran[0] = v;
+                    expr_moran[1] = -1, low_moran[1] = -1, high_moran[1] = -1;
+                    mdafl_gc_log(low_moran, high_moran, expr_moran, 1);
+                    if (expr_moran[0] < high_moran[0])
                         v = td->td_sminsamplevalue[i];
+                }
                 *va_arg(ap, double *) = v;
             }
             break;
@@ -1293,8 +1347,12 @@ static int _TIFFVGetField(TIFF *tif, uint32_t tag, va_list ap)
                 uint16_t i;
                 double v = td->td_smaxsamplevalue[0];
                 for (i = 1; i < td->td_samplesperpixel; ++i)
-                    if (td->td_smaxsamplevalue[i] > v)
+                {expr_moran[0] = td->td_smaxsamplevalue[i], low_moran[0] = v, high_moran[0] = DBL_MAX;
+                    expr_moran[1] = -1, low_moran[1] = -1, high_moran[1] = -1;
+                    mdafl_gc_log(low_moran, high_moran, expr_moran, 1);
+                    if (expr_moran[0] > low_moran[0])
                         v = td->td_smaxsamplevalue[i];
+                }
                 *va_arg(ap, double *) = v;
             }
             break;
@@ -1397,7 +1455,10 @@ static int _TIFFVGetField(TIFF *tif, uint32_t tag, va_list ap)
             break;
         case TIFFTAG_TRANSFERFUNCTION:
             *va_arg(ap, const uint16_t **) = td->td_transferfunction[0];
-            if (td->td_samplesperpixel - td->td_extrasamples > 1)
+            expr_moran[0] = td->td_samplesperpixel - td->td_extrasamples, low_moran[0] = 1, high_moran[0] = DBL_MAX;
+            expr_moran[1] = -1, low_moran[1] = -1, high_moran[1] = -1;
+            mdafl_gc_log(low_moran, high_moran, expr_moran, 1);
+            if (expr_moran[0] > low_moran[0])
             {
                 *va_arg(ap, const uint16_t **) = td->td_transferfunction[1];
                 *va_arg(ap, const uint16_t **) = td->td_transferfunction[2];
@@ -1689,9 +1750,9 @@ int TIFFCreateDirectory(TIFF *tif)
 {
     /* Free previously allocated memory and setup default values. */
     TIFFFreeDirectory(tif);
-    TIFFDefaultDirectory(tif);
-    tif->tif_diroff = 0;
-    tif->tif_nextdiroff = 0;
+    TIFFDefaultDirectory(tif);  // 16 tif_dir.c:1692
+    tif->tif_diroff = 0;  // 7 tif_dir.c:1693
+    tif->tif_nextdiroff = 0;  // 10 tif_dir.c:1694
     tif->tif_curoff = 0;
     tif->tif_row = (uint32_t)-1;
     tif->tif_curstrip = (uint32_t)-1;
@@ -1777,7 +1838,7 @@ int TIFFDefaultDirectory(TIFF *tif)
     td->td_ycbcrpositioning = YCBCRPOSITION_CENTERED;
     tif->tif_postdecode = _TIFFNoPostDecode;
     tif->tif_foundfield = NULL;
-    tif->tif_tagmethods.vsetfield = _TIFFVSetField;
+    tif->tif_tagmethods.vsetfield = _TIFFVSetField;  // 17 tif_dir.c:1780
     tif->tif_tagmethods.vgetfield = _TIFFVGetField;
     tif->tif_tagmethods.printdir = NULL;
     /* additional default values */
@@ -1798,7 +1859,10 @@ int TIFFDefaultDirectory(TIFF *tif)
      *  but do some prior cleanup first.
      * (http://trac.osgeo.org/gdal/ticket/5054)
      */
-    if (tif->tif_nfieldscompat > 0)
+    expr_moran[0] = tif->tif_nfieldscompat, low_moran[0] = 0, high_moran[0] = DBL_MAX;
+    expr_moran[1] = -1, low_moran[1] = -1, high_moran[1] = -1;
+    mdafl_gc_log(low_moran, high_moran, expr_moran, 1);
+    if (expr_moran[0] > low_moran[0])
     {
         uint32_t i;
 
@@ -1846,7 +1910,7 @@ static int TIFFAdvanceDirectory(TIFF *tif, uint64_t *nextdiroff, uint64_t *off,
                       "Starting directory %u at offset 0x%" PRIx64 " (%" PRIu64
                       ") might cause an IFD loop",
                       *nextdirnum, *nextdiroff, *nextdiroff);
-        *nextdiroff = 0;
+        *nextdiroff = 0;  // 10 tif_dir.c:1849
         *nextdirnum = 0;
         return (0);
     }
@@ -1867,7 +1931,7 @@ static int TIFFAdvanceDirectory(TIFF *tif, uint64_t *nextdiroff, uint64_t *off,
                 TIFFErrorExtR(tif, module,
                               "%s:%d: %s: Error fetching directory count",
                               __FILE__, __LINE__, tif->tif_name);
-                *nextdiroff = 0;
+                *nextdiroff = 0;  // 10 tif_dir.c:1870
                 return (0);
             }
             _TIFFmemcpy(&dircount, tif->tif_base + poffa, sizeof(uint16_t));
@@ -1886,14 +1950,17 @@ static int TIFFAdvanceDirectory(TIFF *tif, uint64_t *nextdiroff, uint64_t *off,
             _TIFFmemcpy(&nextdir32, tif->tif_base + poffc, sizeof(uint32_t));
             if (tif->tif_flags & TIFF_SWAB)
                 TIFFSwabLong(&nextdir32);
-            *nextdiroff = nextdir32;
+            *nextdiroff = nextdir32;  // 10 tif_dir.c:1889
         }
         else
         {
             tmsize_t poffa, poffb, poffc, poffd;
             uint64_t dircount64;
             uint16_t dircount16;
-            if (poff > (uint64_t)TIFF_TMSIZE_T_MAX - sizeof(uint64_t))
+            expr_moran[0] = poff, low_moran[0] = (uint64_t)TIFF_TMSIZE_T_MAX - sizeof(uint64_t), high_moran[0] = DBL_MAX;
+            expr_moran[1] = -1, low_moran[1] = -1, high_moran[1] = -1;
+            mdafl_gc_log(low_moran, high_moran, expr_moran, 1);
+            if (expr_moran[0] > low_moran[0])
             {
                 TIFFErrorExtR(tif, module,
                               "%s:%d: %s: Error fetching directory count",
@@ -1902,7 +1969,10 @@ static int TIFFAdvanceDirectory(TIFF *tif, uint64_t *nextdiroff, uint64_t *off,
             }
             poffa = (tmsize_t)poff;
             poffb = poffa + sizeof(uint64_t);
-            if (poffb > tif->tif_size)
+            expr_moran[0] = poffb, low_moran[0] = tif->tif_size, high_moran[0] = DBL_MAX;
+            expr_moran[1] = -1, low_moran[1] = -1, high_moran[1] = -1;
+            mdafl_gc_log(low_moran, high_moran, expr_moran, 1);
+            if (expr_moran[0] > low_moran[0])
             {
                 TIFFErrorExtR(tif, module,
                               "%s:%d: %s: Error fetching directory count",
@@ -1912,22 +1982,30 @@ static int TIFFAdvanceDirectory(TIFF *tif, uint64_t *nextdiroff, uint64_t *off,
             _TIFFmemcpy(&dircount64, tif->tif_base + poffa, sizeof(uint64_t));
             if (tif->tif_flags & TIFF_SWAB)
                 TIFFSwabLong8(&dircount64);
-            if (dircount64 > 0xFFFF)
+            expr_moran[0] = dircount64, low_moran[0] = 0xFFFF, high_moran[0] = DBL_MAX;
+            expr_moran[1] = -1, low_moran[1] = -1, high_moran[1] = -1;
+            mdafl_gc_log(low_moran, high_moran, expr_moran, 1);
+            if (expr_moran[0] > low_moran[0])
             {
                 TIFFErrorExtR(tif, module,
                               "Sanity check on directory count failed");
                 return (0);
             }
             dircount16 = (uint16_t)dircount64;
-            if (poffb > TIFF_TMSIZE_T_MAX - (tmsize_t)(dircount16 * 20) -
-                            (tmsize_t)sizeof(uint64_t))
+            expr_moran[0] = poffb, low_moran[0] = TIFF_TMSIZE_T_MAX - (tmsize_t)(dircount16 * 20) - (tmsize_t)sizeof(uint64_t), high_moran[0] = DBL_MAX;
+            expr_moran[1] = -1, low_moran[1] = -1, high_moran[1] = -1;
+            mdafl_gc_log(low_moran, high_moran, expr_moran, 1);
+            if (expr_moran[0] > low_moran[0])
             {
                 TIFFErrorExtR(tif, module, "Error fetching directory link");
                 return (0);
             }
             poffc = poffb + dircount16 * 20;
             poffd = poffc + sizeof(uint64_t);
-            if (poffd > tif->tif_size)
+            expr_moran[0] = poffd, low_moran[0] = tif->tif_size, high_moran[0] = DBL_MAX;
+            expr_moran[1] = -1, low_moran[1] = -1, high_moran[1] = -1;
+            mdafl_gc_log(low_moran, high_moran, expr_moran, 1);
+            if (expr_moran[0] > low_moran[0])
             {
                 TIFFErrorExtR(tif, module, "Error fetching directory link");
                 return (0);
@@ -1967,7 +2045,7 @@ static int TIFFAdvanceDirectory(TIFF *tif, uint64_t *nextdiroff, uint64_t *off,
             }
             if (tif->tif_flags & TIFF_SWAB)
                 TIFFSwabLong(&nextdir32);
-            *nextdiroff = nextdir32;
+            *nextdiroff = nextdir32;  // 10 tif_dir.c:1970
         }
         else
         {
@@ -1983,7 +2061,10 @@ static int TIFFAdvanceDirectory(TIFF *tif, uint64_t *nextdiroff, uint64_t *off,
             }
             if (tif->tif_flags & TIFF_SWAB)
                 TIFFSwabLong8(&dircount64);
-            if (dircount64 > 0xFFFF)
+            expr_moran[0] = dircount64, low_moran[0] = 0xFFFF, high_moran[0] = DBL_MAX;
+            expr_moran[1] = -1, low_moran[1] = -1, high_moran[1] = -1;
+            mdafl_gc_log(low_moran, high_moran, expr_moran, 1);
+            if (expr_moran[0] > low_moran[0])
             {
                 TIFFErrorExtR(tif, module,
                               "%s:%d: %s: Error fetching directory count",
@@ -2018,7 +2099,7 @@ static int TIFFAdvanceDirectory(TIFF *tif, uint64_t *nextdiroff, uint64_t *off,
                 ") might be an IFD loop. Treating directory %d as "
                 "last directory",
                 *nextdirnum, *nextdiroff, *nextdiroff, (int)(*nextdirnum) - 1);
-            *nextdiroff = 0;
+            *nextdiroff = 0;  // 10 tif_dir.c:2021
             (*nextdirnum)--;
         }
     }
@@ -2034,9 +2115,9 @@ tdir_t TIFFNumberOfDirectories(TIFF *tif)
     tdir_t nextdirnum;
     tdir_t n;
     if (!(tif->tif_flags & TIFF_BIGTIFF))
-        nextdiroff = tif->tif_header.classic.tiff_diroff;
+        nextdiroff = tif->tif_header.classic.tiff_diroff;  // 10 tif_dir.c:2037
     else
-        nextdiroff = tif->tif_header.big.tiff_diroff;
+        nextdiroff = tif->tif_header.big.tiff_diroff;  // 10 tif_dir.c:2039
     nextdirnum = 0;
     n = 0;
     while (nextdiroff != 0 &&
@@ -2179,7 +2260,10 @@ int TIFFSetSubDirectory(TIFF *tif, uint64_t diroff)
             probablySubIFD = 1;
         }
         /* -1 because TIFFReadDirectory() will increment tif_curdir. */
-        if (curdir >= 1)
+        expr_moran[0] = curdir, low_moran[0] = 1, high_moran[0] = DBL_MAX;
+        expr_moran[1] = -1, low_moran[1] = -1, high_moran[1] = -1;
+        mdafl_gc_log(low_moran, high_moran, expr_moran, 1);
+        if (expr_moran[0] >= low_moran[0])
             tif->tif_curdir = curdir - 1;
         else
             tif->tif_curdir = TIFF_NON_EXISTENT_DIR_NUMBER;
@@ -2356,7 +2440,10 @@ int TIFFUnlinkDirectory(TIFF *tif, tdir_t dirn)
     tif->tif_row = (uint32_t)-1;
     tif->tif_curstrip = (uint32_t)-1;
     tif->tif_curdir = TIFF_NON_EXISTENT_DIR_NUMBER;
-    if (tif->tif_curdircount > 0)
+    expr_moran[0] = tif->tif_curdircount, low_moran[0] = 0, high_moran[0] = DBL_MAX;
+    expr_moran[1] = -1, low_moran[1] = -1, high_moran[1] = -1;
+    mdafl_gc_log(low_moran, high_moran, expr_moran, 1);
+    if (expr_moran[0] > low_moran[0])
         tif->tif_curdircount--;
     else
         tif->tif_curdircount = TIFF_NON_EXISTENT_DIR_NUMBER;

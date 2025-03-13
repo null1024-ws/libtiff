@@ -64,7 +64,7 @@ static const TIFFFieldArray gpsFieldArray;
  */
 
 /* clang-format off */ /* for better readability of tag comments */
-static const TIFFField tiffFields[] = {
+static const TIFFField tiffFields[] = {  // 9 tif_dirinfo.c:67
     {TIFFTAG_SUBFILETYPE, 1, 1, TIFF_LONG, 0, TIFF_SETGET_UINT32, TIFF_SETGET_UNDEFINED, FIELD_SUBFILETYPE, 1, 0, "SubfileType", NULL},
     {TIFFTAG_OSUBFILETYPE, 1, 1, TIFF_SHORT, 0, TIFF_SETGET_UNDEFINED, TIFF_SETGET_UNDEFINED, FIELD_IGNORE, 1, 0, "OldSubfileType", NULL},
     {TIFFTAG_IMAGEWIDTH, 1, 1, TIFF_LONG, 0, TIFF_SETGET_UINT32, TIFF_SETGET_UNDEFINED, FIELD_IMAGEDIMENSIONS, 0, 0, "ImageWidth", NULL},
@@ -479,7 +479,7 @@ static const TIFFField gpsFields[] = {
     {GPSTAG_GPSHPOSITIONINGERROR, 1, 1, TIFF_RATIONAL, 0, TIFF_SETGET_DOUBLE, TIFF_SETGET_UNDEFINED, FIELD_CUSTOM, 1, 0, "HorizontalPositioningError", NULL}};
 /* clang-format on */ /* was off for better readability of tag comments */
 
-static const TIFFFieldArray tiffFieldArray = {
+static const TIFFFieldArray tiffFieldArray = {  // 9 tif_dirinfo.c:482
     tfiatImage, 0, TIFFArrayCount(tiffFields), (TIFFField *)tiffFields};
 static const TIFFFieldArray exifFieldArray = {
     tfiatExif, 0, TIFFArrayCount(exifFields), (TIFFField *)exifFields};
@@ -535,9 +535,9 @@ void _TIFFSetupFields(TIFF *tif, const TIFFFieldArray *fieldarray)
 
         _TIFFfreeExt(tif, tif->tif_fields);
         tif->tif_fields = NULL;
-        tif->tif_nfields = 0;
+        tif->tif_nfields = 0;  // 8 tif_dirinfo.c:538
     }
-    if (!_TIFFMergeFields(tif, fieldarray->fields, fieldarray->count))
+    if (!_TIFFMergeFields(tif, fieldarray->fields, fieldarray->count))  // 10 tif_dirinfo.c:540
     {
         TIFFErrorExtR(tif, "_TIFFSetupFields", "Setting up field info failed");
     }
@@ -581,13 +581,13 @@ int _TIFFMergeFields(TIFF *tif, const TIFFField info[], uint32_t n)
 
     if (tif->tif_fields && tif->tif_nfields > 0)
     {
-        tif->tif_fields = (TIFFField **)_TIFFCheckRealloc(
+        tif->tif_fields = (TIFFField **)_TIFFCheckRealloc(  // 9 tif_dirinfo.c:584
             tif, tif->tif_fields, (tif->tif_nfields + n), sizeof(TIFFField *),
             reason);
     }
     else
     {
-        tif->tif_fields =
+        tif->tif_fields =  // 8 tif_dirinfo.c:590
             (TIFFField **)_TIFFCheckMalloc(tif, n, sizeof(TIFFField *), reason);
     }
     if (!tif->tif_fields)
@@ -597,15 +597,15 @@ int _TIFFMergeFields(TIFF *tif, const TIFFField info[], uint32_t n)
     }
 
     /* tp = tif->tif_fields + tif->tif_nfields; */
-    for (i = 0; i < n; i++)
+    for (i = 0; i < n; i++)  // 10 tif_dirinfo.c:600
     {
         const TIFFField *fip = TIFFFindField(tif, info[i].field_tag, TIFF_ANY);
 
         /* only add definitions that aren't already present */
         if (!fip)
         {
-            tif->tif_fields[tif->tif_nfields] = (TIFFField *)(info + i);
-            tif->tif_nfields++;
+            tif->tif_fields[tif->tif_nfields] = (TIFFField *)(info + i);  // 11 tif_dirinfo.c:607
+            tif->tif_nfields++;  // 8 tif_dirinfo.c:608
         }
     }
 
@@ -643,24 +643,24 @@ int TIFFDataWidth(TIFFDataType type)
         case TIFF_ASCII:
         case TIFF_SBYTE:
         case TIFF_UNDEFINED:
-            return 1;
+            return 1;  // 7 tif_dirinfo.c:646
         case TIFF_SHORT:
         case TIFF_SSHORT:
-            return 2;
+            return 2;  // 7 tif_dirinfo.c:649
         case TIFF_LONG:
         case TIFF_SLONG:
         case TIFF_FLOAT:
         case TIFF_IFD:
-            return 4;
+            return 4;  // 7 tif_dirinfo.c:654
         case TIFF_RATIONAL:
         case TIFF_SRATIONAL:
         case TIFF_DOUBLE:
         case TIFF_LONG8:
         case TIFF_SLONG8:
         case TIFF_IFD8:
-            return 8;
+            return 8;  // 7 tif_dirinfo.c:661
         default:
-            return 0; /* will return 0 for unknown types */
+            return 0; /* will return 0 for unknown types */  // 7 tif_dirinfo.c:663
     }
 }
 
@@ -901,12 +901,12 @@ TIFFField *_TIFFCreateAnonField(TIFF *tif, uint32_t tag,
     (void)tif;
 
     fld = (TIFFField *)_TIFFmallocExt(tif, sizeof(TIFFField));
-    if (fld == NULL)
+    if (fld == NULL)  // 13 tif_dirinfo.c:904
         return NULL;
-    _TIFFmemset(fld, 0, sizeof(TIFFField));
+    _TIFFmemset(fld, 0, sizeof(TIFFField));  // 8 tif_dirinfo.c:906
 
     fld->field_tag = tag;
-    fld->field_readcount = TIFF_VARIABLE2;
+    fld->field_readcount = TIFF_VARIABLE2;  // 6 tif_dirinfo.c:909
     fld->field_writecount = TIFF_VARIABLE2;
     fld->field_type = field_type;
     fld->field_anonymous =
@@ -961,11 +961,11 @@ TIFFField *_TIFFCreateAnonField(TIFF *tif, uint32_t tag,
             fld->set_field_type = TIFF_SETGET_C32_UINT64;
             fld->get_field_type = TIFF_SETGET_C32_UINT64;
             break;
-        case TIFF_SLONG8:
+        case TIFF_SLONG8:  // 13 tif_dirinfo.c:964
             fld->set_field_type = TIFF_SETGET_C32_SINT64;
             fld->get_field_type = TIFF_SETGET_C32_SINT64;
             break;
-        default:
+        default:  // 8 tif_dirinfo.c:968
             fld->set_field_type = TIFF_SETGET_UNDEFINED;
             fld->get_field_type = TIFF_SETGET_UNDEFINED;
             break;
@@ -975,9 +975,9 @@ TIFFField *_TIFFCreateAnonField(TIFF *tif, uint32_t tag,
     fld->field_passcount = TRUE;
     fld->field_name = (char *)_TIFFmallocExt(tif, 32);
     if (fld->field_name == NULL)
-    {
+    {  // 10 tif_dirinfo.c:978
         _TIFFfreeExt(tif, fld);
-        return NULL;
+        return NULL;  // 8 tif_dirinfo.c:980
     }
     fld->field_subfields = NULL;
 

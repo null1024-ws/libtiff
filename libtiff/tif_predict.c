@@ -926,7 +926,7 @@ static const TIFFField predictFields[] = {
      TIFF_SETGET_UINT16, FIELD_PREDICTOR, FALSE, FALSE, "Predictor", NULL},
 };
 
-static int PredictorVSetField(TIFF *tif, uint32_t tag, va_list ap)
+static int PredictorVSetField(TIFF *tif, uint32_t tag, va_list ap)  // 9 tif_predict.c:929
 {
     TIFFPredictorState *sp = PredictorState(tif);
 

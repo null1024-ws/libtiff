@@ -671,7 +671,7 @@ static int ZIPVGetField(TIFF *tif, uint32_t tag, va_list ap)
     return (1);
 }
 
-static const TIFFField zipFields[] = {
+static const TIFFField zipFields[] = {  // 9 tif_zip.c:674
     {TIFFTAG_ZIPQUALITY, 0, 0, TIFF_ANY, 0, TIFF_SETGET_INT,
      TIFF_SETGET_UNDEFINED, FIELD_PSEUDO, TRUE, FALSE, "", NULL},
     {TIFFTAG_DEFLATE_SUBCODEC, 0, 0, TIFF_ANY, 0, TIFF_SETGET_INT,

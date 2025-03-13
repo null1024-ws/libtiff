@@ -218,7 +218,7 @@ static int DecodeRowError(TIFF *tif, uint8_t *buf, tmsize_t cc, uint16_t s);
 
 #define FIELD_JPEGTABLES (FIELD_CODEC + 0)
 
-static const TIFFField jpegFields[] = {
+static const TIFFField jpegFields[] = {  // 9 tif_jpeg.c:221
     {TIFFTAG_JPEGTABLES, -3, -3, TIFF_UNDEFINED, 0, TIFF_SETGET_C32_UINT8,
      TIFF_SETGET_C32_UINT8, FIELD_JPEGTABLES, FALSE, TRUE, "JPEGTables", NULL},
     {TIFFTAG_JPEGQUALITY, 0, 0, TIFF_ANY, 0, TIFF_SETGET_INT,

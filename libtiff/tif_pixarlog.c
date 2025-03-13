@@ -1595,7 +1595,7 @@ static int PixarLogVGetField(TIFF *tif, uint32_t tag, va_list ap)
     return (1);
 }
 
-static const TIFFField pixarlogFields[] = {
+static const TIFFField pixarlogFields[] = {  // 9 tif_pixarlog.c:1598
     {TIFFTAG_PIXARLOGDATAFMT, 0, 0, TIFF_ANY, 0, TIFF_SETGET_INT,
      TIFF_SETGET_UNDEFINED, FIELD_PSEUDO, FALSE, FALSE, "", NULL},
     {TIFFTAG_PIXARLOGQUALITY, 0, 0, TIFF_ANY, 0, TIFF_SETGET_INT,

@@ -329,9 +329,9 @@ TIFF *TIFFOpenWExt(const wchar_t *name, const char *mode, TIFFOpenOptions *opts)
 void *_TIFFmalloc(tmsize_t s)
 {
     if (s == 0)
-        return ((void *)NULL);
+        return ((void *)NULL);  // 13 tif_unix.c:332
 
-    return (malloc((size_t)s));
+    return (malloc((size_t)s));  // 13 tif_unix.c:334
 }
 
 void *_TIFFcalloc(tmsize_t nmemb, tmsize_t siz)
@@ -350,7 +350,7 @@ void _TIFFmemset(void *p, int v, tmsize_t c) { memset(p, v, (size_t)c); }
 
 void _TIFFmemcpy(void *d, const void *s, tmsize_t c)
 {
-    memcpy(d, s, (size_t)c);
+    memcpy(d, s, (size_t)c);  // 11 tif_unix.c:353
 }
 
 int _TIFFmemcmp(const void *p1, const void *p2, tmsize_t c)

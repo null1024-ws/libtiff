@@ -179,7 +179,7 @@
 #define FIELD_OJPEG_JPEGPROC (FIELD_CODEC + 5)
 #define FIELD_OJPEG_JPEGRESTARTINTERVAL (FIELD_CODEC + 6)
 
-static const TIFFField ojpegFields[] = {
+static const TIFFField ojpegFields[] = {  // 9 tif_ojpeg.c:182
     {TIFFTAG_JPEGIFOFFSET, 1, 1, TIFF_LONG8, 0, TIFF_SETGET_UINT64,
      TIFF_SETGET_UNDEFINED, FIELD_OJPEG_JPEGINTERCHANGEFORMAT, TRUE, FALSE,
      "JpegInterchangeFormat", NULL},

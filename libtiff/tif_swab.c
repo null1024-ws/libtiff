@@ -35,9 +35,9 @@ void TIFFSwabShort(uint16_t *wp)
     register unsigned char *cp = (unsigned char *)wp;
     unsigned char t;
     assert(sizeof(uint16_t) == 2);
-    t = cp[1];
-    cp[1] = cp[0];
-    cp[0] = t;
+    t = cp[1];  // 10 tif_swab.c:38
+    cp[1] = cp[0];  // 10 tif_swab.c:39
+    cp[0] = t;  // 11 tif_swab.c:40
 }
 #endif
 
@@ -47,12 +47,12 @@ void TIFFSwabLong(uint32_t *lp)
     register unsigned char *cp = (unsigned char *)lp;
     unsigned char t;
     assert(sizeof(uint32_t) == 4);
-    t = cp[3];
-    cp[3] = cp[0];
-    cp[0] = t;
-    t = cp[2];
-    cp[2] = cp[1];
-    cp[1] = t;
+    t = cp[3];  // 8 tif_swab.c:50
+    cp[3] = cp[0];  // 8 tif_swab.c:51
+    cp[0] = t;  // 9 tif_swab.c:52
+    t = cp[2];  // 10 tif_swab.c:53
+    cp[2] = cp[1];  // 10 tif_swab.c:54
+    cp[1] = t;  // 11 tif_swab.c:55
 }
 #endif
 
@@ -62,18 +62,18 @@ void TIFFSwabLong8(uint64_t *lp)
     register unsigned char *cp = (unsigned char *)lp;
     unsigned char t;
     assert(sizeof(uint64_t) == 8);
-    t = cp[7];
-    cp[7] = cp[0];
-    cp[0] = t;
-    t = cp[6];
-    cp[6] = cp[1];
-    cp[1] = t;
-    t = cp[5];
-    cp[5] = cp[2];
-    cp[2] = t;
-    t = cp[4];
-    cp[4] = cp[3];
-    cp[3] = t;
+    t = cp[7];  // 4 tif_swab.c:65
+    cp[7] = cp[0];  // 4 tif_swab.c:66
+    cp[0] = t;  // 5 tif_swab.c:67
+    t = cp[6];  // 6 tif_swab.c:68
+    cp[6] = cp[1];  // 6 tif_swab.c:69
+    cp[1] = t;  // 7 tif_swab.c:70
+    t = cp[5];  // 8 tif_swab.c:71
+    cp[5] = cp[2];  // 8 tif_swab.c:72
+    cp[2] = t;  // 9 tif_swab.c:73
+    t = cp[4];  // 10 tif_swab.c:74
+    cp[4] = cp[3];  // 10 tif_swab.c:75
+    cp[3] = t;  // 11 tif_swab.c:76
 }
 #endif
 
@@ -87,9 +87,9 @@ void TIFFSwabArrayOfShort(register uint16_t *wp, tmsize_t n)
     while (n-- > 0)
     {
         cp = (unsigned char *)wp;
-        t = cp[1];
-        cp[1] = cp[0];
-        cp[0] = t;
+        t = cp[1];  // 10 tif_swab.c:90
+        cp[1] = cp[0];  // 10 tif_swab.c:91
+        cp[0] = t;  // 11 tif_swab.c:92
         wp++;
     }
 }
@@ -123,12 +123,12 @@ void TIFFSwabArrayOfLong(register uint32_t *lp, tmsize_t n)
     while (n-- > 0)
     {
         cp = (unsigned char *)lp;
-        t = cp[3];
-        cp[3] = cp[0];
-        cp[0] = t;
-        t = cp[2];
-        cp[2] = cp[1];
-        cp[1] = t;
+        t = cp[3];  // 8 tif_swab.c:126
+        cp[3] = cp[0];  // 8 tif_swab.c:127
+        cp[0] = t;  // 9 tif_swab.c:128
+        t = cp[2];  // 10 tif_swab.c:129
+        cp[2] = cp[1];  // 10 tif_swab.c:130
+        cp[1] = t;  // 11 tif_swab.c:131
         lp++;
     }
 }
@@ -144,18 +144,18 @@ void TIFFSwabArrayOfLong8(register uint64_t *lp, tmsize_t n)
     while (n-- > 0)
     {
         cp = (unsigned char *)lp;
-        t = cp[7];
-        cp[7] = cp[0];
-        cp[0] = t;
-        t = cp[6];
-        cp[6] = cp[1];
-        cp[1] = t;
-        t = cp[5];
-        cp[5] = cp[2];
-        cp[2] = t;
-        t = cp[4];
-        cp[4] = cp[3];
-        cp[3] = t;
+        t = cp[7];  // 4 tif_swab.c:147
+        cp[7] = cp[0];  // 4 tif_swab.c:148
+        cp[0] = t;  // 5 tif_swab.c:149
+        t = cp[6];  // 6 tif_swab.c:150
+        cp[6] = cp[1];  // 6 tif_swab.c:151
+        cp[1] = t;  // 7 tif_swab.c:152
+        t = cp[5];  // 8 tif_swab.c:153
+        cp[5] = cp[2];  // 8 tif_swab.c:154
+        cp[2] = t;  // 9 tif_swab.c:155
+        t = cp[4];  // 10 tif_swab.c:156
+        cp[4] = cp[3];  // 10 tif_swab.c:157
+        cp[3] = t;  // 11 tif_swab.c:158
         lp++;
     }
 }
@@ -186,12 +186,12 @@ void TIFFSwabArrayOfFloat(register float *fp, tmsize_t n)
     while (n-- > 0)
     {
         cp = (unsigned char *)fp;
-        t = cp[3];
-        cp[3] = cp[0];
-        cp[0] = t;
-        t = cp[2];
-        cp[2] = cp[1];
-        cp[1] = t;
+        t = cp[3];  // 7 tif_swab.c:189
+        cp[3] = cp[0];  // 7 tif_swab.c:190
+        cp[0] = t;  // 8 tif_swab.c:191
+        t = cp[2];  // 9 tif_swab.c:192
+        cp[2] = cp[1];  // 9 tif_swab.c:193
+        cp[1] = t;  // 10 tif_swab.c:194
         fp++;
     }
 }
@@ -254,7 +254,7 @@ void TIFFSwabArrayOfDouble(double *dp, tmsize_t n)
  * for algorithms that want an equivalent table that
  * do not reverse bit values.
  */
-static const unsigned char TIFFBitRevTable[256] = {
+static const unsigned char TIFFBitRevTable[256] = {  // 10 tif_swab.c:257
     0x00, 0x80, 0x40, 0xc0, 0x20, 0xa0, 0x60, 0xe0, 0x10, 0x90, 0x50, 0xd0,
     0x30, 0xb0, 0x70, 0xf0, 0x08, 0x88, 0x48, 0xc8, 0x28, 0xa8, 0x68, 0xe8,
     0x18, 0x98, 0x58, 0xd8, 0x38, 0xb8, 0x78, 0xf8, 0x04, 0x84, 0x44, 0xc4,
@@ -311,19 +311,19 @@ void TIFFReverseBits(uint8_t *cp, tmsize_t n)
 {
     for (; n > 8; n -= 8)
     {
-        cp[0] = TIFFBitRevTable[cp[0]];
-        cp[1] = TIFFBitRevTable[cp[1]];
-        cp[2] = TIFFBitRevTable[cp[2]];
-        cp[3] = TIFFBitRevTable[cp[3]];
-        cp[4] = TIFFBitRevTable[cp[4]];
-        cp[5] = TIFFBitRevTable[cp[5]];
-        cp[6] = TIFFBitRevTable[cp[6]];
-        cp[7] = TIFFBitRevTable[cp[7]];
+        cp[0] = TIFFBitRevTable[cp[0]];  // 4 tif_swab.c:314
+        cp[1] = TIFFBitRevTable[cp[1]];  // 5 tif_swab.c:315
+        cp[2] = TIFFBitRevTable[cp[2]];  // 6 tif_swab.c:316
+        cp[3] = TIFFBitRevTable[cp[3]];  // 7 tif_swab.c:317
+        cp[4] = TIFFBitRevTable[cp[4]];  // 8 tif_swab.c:318
+        cp[5] = TIFFBitRevTable[cp[5]];  // 9 tif_swab.c:319
+        cp[6] = TIFFBitRevTable[cp[6]];  // 10 tif_swab.c:320
+        cp[7] = TIFFBitRevTable[cp[7]];  // 11 tif_swab.c:321
         cp += 8;
     }
     while (n-- > 0)
     {
-        *cp = TIFFBitRevTable[*cp];
+        *cp = TIFFBitRevTable[*cp];  // 11 tif_swab.c:326
         cp++;
     }
 }

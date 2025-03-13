@@ -50,10 +50,10 @@ uint64_t _TIFFMultiply64(TIFF *tif, uint64_t first, uint64_t second,
     if (second && first > UINT64_MAX / second)
     {
         TIFFErrorExtR(tif, where, "Integer overflow in %s", where);
-        return 0;
+        return 0;  // 6 tif_aux.c:53
     }
 
-    return first * second;
+    return first * second;  // 6 tif_aux.c:56
 }
 
 tmsize_t _TIFFMultiplySSize(TIFF *tif, tmsize_t first, tmsize_t second,
@@ -67,7 +67,7 @@ tmsize_t _TIFFMultiplySSize(TIFF *tif, tmsize_t first, tmsize_t second,
                           "Invalid argument to _TIFFMultiplySSize() in %s",
                           where);
         }
-        return 0;
+        return 0;  // 11 tif_aux.c:70
     }
 
     if (first > TIFF_TMSIZE_T_MAX / second)
@@ -76,9 +76,9 @@ tmsize_t _TIFFMultiplySSize(TIFF *tif, tmsize_t first, tmsize_t second,
         {
             TIFFErrorExtR(tif, where, "Integer overflow in %s", where);
         }
-        return 0;
+        return 0;  // 11 tif_aux.c:79
     }
-    return first * second;
+    return first * second;  // 11 tif_aux.c:81
 }
 
 tmsize_t _TIFFCastUInt64ToSSize(TIFF *tif, uint64_t val, const char *module)
@@ -89,22 +89,22 @@ tmsize_t _TIFFCastUInt64ToSSize(TIFF *tif, uint64_t val, const char *module)
         {
             TIFFErrorExtR(tif, module, "Integer overflow");
         }
-        return 0;
+        return 0;  // 9 tif_aux.c:92
     }
-    return (tmsize_t)val;
+    return (tmsize_t)val;  // 9 tif_aux.c:94
 }
 
 void *_TIFFCheckRealloc(TIFF *tif, void *buffer, tmsize_t nmemb,
                         tmsize_t elem_size, const char *what)
 {
     void *cp = NULL;
-    tmsize_t count = _TIFFMultiplySSize(tif, nmemb, elem_size, NULL);
+    tmsize_t count = _TIFFMultiplySSize(tif, nmemb, elem_size, NULL);  // 10 tif_aux.c:101
     /*
      * Check for integer overflow.
      */
     if (count != 0)
     {
-        cp = _TIFFreallocExt(tif, buffer, count);
+        cp = _TIFFreallocExt(tif, buffer, count);  // 10 tif_aux.c:107
     }
 
     if (cp == NULL)
@@ -122,7 +122,7 @@ void *_TIFFCheckRealloc(TIFF *tif, void *buffer, tmsize_t nmemb,
 void *_TIFFCheckMalloc(TIFF *tif, tmsize_t nmemb, tmsize_t elem_size,
                        const char *what)
 {
-    return _TIFFCheckRealloc(tif, NULL, nmemb, elem_size, what);
+    return _TIFFCheckRealloc(tif, NULL, nmemb, elem_size, what);  // 9 tif_aux.c:125
 }
 
 static int TIFFDefaultTransferFunction(TIFF *tif, TIFFDirectory *td)
@@ -139,7 +139,7 @@ static int TIFFDefaultTransferFunction(TIFF *tif, TIFFDirectory *td)
     tf[0] = (uint16_t *)_TIFFmallocExt(tif, nbytes);
     if (tf[0] == NULL)
         return 0;
-    tf[0][0] = 0;
+    tf[0][0] = 0;  // 13 tif_aux.c:142
     for (i = 1; i < n; i++)
     {
         double t = (double)i / ((double)n - 1.);
@@ -151,11 +151,11 @@ static int TIFFDefaultTransferFunction(TIFF *tif, TIFFDirectory *td)
         tf[1] = (uint16_t *)_TIFFmallocExt(tif, nbytes);
         if (tf[1] == NULL)
             goto bad;
-        _TIFFmemcpy(tf[1], tf[0], nbytes);
+        _TIFFmemcpy(tf[1], tf[0], nbytes);  // 13 tif_aux.c:154
         tf[2] = (uint16_t *)_TIFFmallocExt(tif, nbytes);
         if (tf[2] == NULL)
             goto bad;
-        _TIFFmemcpy(tf[2], tf[0], nbytes);
+        _TIFFmemcpy(tf[2], tf[0], nbytes);  // 13 tif_aux.c:158
     }
     return 1;
 
@@ -177,7 +177,7 @@ static int TIFFDefaultRefBlackWhite(TIFF *tif, TIFFDirectory *td)
     td->td_refblackwhite = (float *)_TIFFmallocExt(tif, 6 * sizeof(float));
     if (td->td_refblackwhite == NULL)
         return 0;
-    if (td->td_photometric == PHOTOMETRIC_YCBCR)
+    if (td->td_photometric == PHOTOMETRIC_YCBCR)  // 13 tif_aux.c:180
     {
         /*
          * YCbCr (Class Y) images must have the ReferenceBlackWhite
@@ -391,10 +391,10 @@ float _TIFFClampDoubleToFloat(double val)
         return FLT_MAX;
     if (val < -FLT_MAX)
         return -FLT_MAX;
-    return (float)val;
+    return (float)val;  // 9 tif_aux.c:394
 }
-
-uint32_t _TIFFClampDoubleToUInt32(double val)
+  // 9 tif_aux.c:396
+uint32_t _TIFFClampDoubleToUInt32(double val)  // 9 tif_aux.c:397
 {
     if (val < 0)
         return 0;
